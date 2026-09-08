@@ -218,10 +218,6 @@ Only `BiDiMarkdownView`, `MarkdownTextDirection`, and `MarkdownStyle` are
 public — the parser, AST, and view internals are free to change without
 breaking consumers.
 
-## Roadmap
-
-- [ ] macOS: verify against a real build (see the callout above), tvOS/visionOS
-
 ## Documentation
 
 The public API (`BiDiMarkdownView`, `MarkdownTextDirection`, `MarkdownStyle`)
