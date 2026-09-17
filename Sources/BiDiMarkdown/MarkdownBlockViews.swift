@@ -106,11 +106,13 @@ final class MarkdownParagraphTextView: NSTextView {
         guard let textContainer, let layoutManager else { return super.intrinsicContentSize }
         layoutManager.ensureLayout(for: textContainer)
         let used = layoutManager.usedRect(for: textContainer)
+        let extraWidth = textContainerInset.width * 2
+        let extraHeight = textContainerInset.height * 2
         switch sizingMode {
         case .wrapsToContainerWidth:
-            return NSSize(width: NSView.noIntrinsicMetric, height: ceil(used.height))
+            return NSSize(width: NSView.noIntrinsicMetric, height: ceil(used.height) + extraHeight)
         case .intrinsicSize:
-            return NSSize(width: ceil(used.width), height: ceil(used.height))
+            return NSSize(width: ceil(used.width) + extraWidth, height: ceil(used.height) + extraHeight)
         }
     }
 

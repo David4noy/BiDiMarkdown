@@ -20,12 +20,6 @@
   render path unchanged — useful if you already have a Catalyst-based Mac
   app and don't want to add an AppKit target just for this).
 
-## 1.1.0
-
-- Task list support (`- [ ]` / `- [x]`) — renders as a checkbox marker
-  (☐ / ☑), read-only (matches how most rendered Markdown views work; the
-  raw source is still where you'd toggle one). Plain bullets and checkbox
-  items can be mixed freely within the same list.
 
 ## 1.0.0
 
@@ -39,3 +33,8 @@ Initial release.
 - Native rendering: UIKit on iOS, AppKit on macOS — no WKWebView.
 - Public API: `BiDiMarkdownView`, `MarkdownTextDirection`, `MarkdownStyle`.
 - DocC documentation catalog.
+
+- Task list support (`- [ ]` / `- [x]`) — renders as a checkbox marker
+  (☐ / ☑), read-only (matches how most rendered Markdown views work; the
+  raw source is still where you'd toggle one). Plain bullets and checkbox
+  items can be mixed freely within the same list.

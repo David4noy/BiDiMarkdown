@@ -33,14 +33,23 @@ struct MarkdownTextView: UIViewRepresentable {
     /// above is a no-op when nothing changed, but this can still legitimately
     /// re-run afterwards (e.g. once an async image load resizes a subview).
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: MarkdownView, context: Context) -> CGSize? {
-        guard let width = proposal.width, width > 0, width.isFinite else { return nil }
-        let target = CGSize(width: width, height: UIView.layoutFittingCompressedSize.height)
-        let fitting = uiView.systemLayoutSizeFitting(
-            target,
+        guard let proposedWidth = proposal.width, proposedWidth > 0, proposedWidth.isFinite else { return nil }
+
+        let natural = uiView.systemLayoutSizeFitting(
+            UIView.layoutFittingCompressedSize,
+            withHorizontalFittingPriority: .fittingSizeLevel,
+            verticalFittingPriority: .fittingSizeLevel
+        )
+        let resolvedWidth = min(natural.width, proposedWidth)
+        guard resolvedWidth < natural.width else {
+            return CGSize(width: resolvedWidth, height: natural.height)
+        }
+        let capped = uiView.systemLayoutSizeFitting(
+            CGSize(width: resolvedWidth, height: UIView.layoutFittingCompressedSize.height),
             withHorizontalFittingPriority: .required,
             verticalFittingPriority: .fittingSizeLevel
         )
-        return CGSize(width: width, height: fitting.height)
+        return CGSize(width: resolvedWidth, height: capped.height)
     }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
@@ -80,8 +89,15 @@ struct MarkdownTextView: NSViewRepresentable {
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: MarkdownView, context: Context) -> CGSize? {
-        guard let width = proposal.width, width > 0, width.isFinite else { return nil }
-        return nsView.fittingSize(forConstrainedWidth: width)
+        guard let proposedWidth = proposal.width, proposedWidth > 0, proposedWidth.isFinite else { return nil }
+
+        let natural = nsView.fittingSize
+        let resolvedWidth = min(natural.width, proposedWidth)
+        guard resolvedWidth < natural.width else {
+            return CGSize(width: resolvedWidth, height: natural.height)
+        }
+        let capped = nsView.fittingSize(forConstrainedWidth: resolvedWidth)
+        return CGSize(width: resolvedWidth, height: capped.height)
     }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
