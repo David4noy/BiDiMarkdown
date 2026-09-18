@@ -99,9 +99,15 @@ final class MarkdownParagraphTextView: NSTextView {
     /// the assigned width actually changes (wrapsToContainerWidth mode) so
     /// wrapping gets recalculated at the new width.
     ///
-    /// UNVERIFIED ON A REAL BUILD — this is the single highest-risk piece of
-    /// the macOS port. If paragraph text doesn't wrap/size correctly, or a
-    /// table column doesn't size to its content, look here first.
+    /// `usedRect(for:)` measures only the laid-out text itself — it knows
+    /// nothing about `textContainerInset`, which NSTextView applies as a
+    /// separate shift when actually drawing. Regular paragraphs use the
+    /// default zero inset, so this went unnoticed; table cells set a real
+    /// inset for padding (see MarkdownTableView), and without adding it back
+    /// in here, the reported size came out smaller than what drawing
+    /// actually needed — the text was clipped by exactly the missing
+    /// amount. Both dimensions of the inset apply on both sides, so each
+    /// contributes double.
     override var intrinsicContentSize: NSSize {
         guard let textContainer, let layoutManager else { return super.intrinsicContentSize }
         layoutManager.ensureLayout(for: textContainer)

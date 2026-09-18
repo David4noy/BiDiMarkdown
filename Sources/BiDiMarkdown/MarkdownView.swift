@@ -87,6 +87,42 @@ final class MarkdownView: PlatformViewBase, PlatformTextViewDelegate {
         contentVersion += 1
     }
 
+    /// The natural (unwrapped, but still respecting the content's own hard
+    /// line breaks) width this content would need — or nil if the content
+    /// isn't simple enough for that to be an unambiguous question. Only
+    /// non-nil for exactly one paragraph or heading and nothing else; a
+    /// list, table, quote, image, or code block all have their own width
+    /// semantics that a single string measurement can't capture correctly,
+    /// so those are left alone entirely (nil here means "just fill the
+    /// proposed width," the original, always-safe behavior).
+    ///
+    /// Deliberately measured via `NSAttributedString.boundingRect` directly
+    /// on the string — never by asking the wrapping UITextView/NSTextView
+    /// itself to report a "compressed" size. A view that's allowed to wrap
+    /// has no well-defined minimum width (it can always wrap narrower, down
+    /// to its widest single word), so asking Auto Layout to compress it
+    /// collapses to roughly that instead of anything useful — that's
+    /// exactly what went wrong the first time this was attempted. Measuring
+    /// the plain string directly, unconstrained, doesn't involve wrapping
+    /// or Auto Layout at all, so that failure mode doesn't apply here.
+    var singleBlockNaturalWidth: CGFloat? {
+        guard stack.arrangedSubviews.count == 1,
+              let textView = stack.arrangedSubviews.first as? MarkdownParagraphTextView,
+              let text = textView.attributedText, text.length > 0
+        else { return nil }
+
+        let bounds = text.boundingRect(
+            with: CGSize(width: Double.greatestFiniteMagnitude, height: Double.greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin],
+            context: nil
+        )
+        // +1pt buffer: boundingRect's glyph-based measurement and TextKit's
+        // actual line-fragment layout can differ by a hair; without this,
+        // a width that's a fraction of a point too narrow could still
+        // trigger an unwanted wrap right at the edge.
+        return ceil(bounds.width) + 1
+    }
+
     private func buildView(for block: MarkdownBlockNode) -> PlatformView {
         switch block {
         case .heading(let level, let inline):
